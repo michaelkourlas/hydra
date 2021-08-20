@@ -26,6 +26,7 @@ import (
 	"github.com/ory/fosite/compose"
 	foauth2 "github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/handler/openid"
+	"github.com/ory/fosite/token/jwt"
 	"github.com/ory/herodot"
 	"github.com/ory/x/healthx"
 	"github.com/ory/x/resilience"
@@ -296,6 +297,7 @@ func (m *RegistryBase) OAuth2Provider() fosite.OAuth2Provider {
 			coreStrategy = &foauth2.DefaultJWTStrategy{
 				JWTStrategy:     m.AccessTokenJWTStrategy(),
 				HMACSHAStrategy: hmacStrategy,
+				ScopeField: jwt.JWTScopeFieldBoth,
 			}
 		case "opaque":
 			coreStrategy = hmacStrategy
