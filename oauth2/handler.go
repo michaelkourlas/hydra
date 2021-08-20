@@ -483,7 +483,9 @@ func (h *Handler) IntrospectHandler(w http.ResponseWriter, r *http.Request, _ ht
 	}
 
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	if err = json.NewEncoder(w).Encode(&Introspection{
+
+	out := map[string]interface{}{}
+	intro := Introspection{
 		Active:            resp.IsActive(),
 		ClientID:          resp.GetAccessRequester().GetClient().GetID(),
 		Scope:             strings.Join(resp.GetAccessRequester().GetGrantedScopes(), " "),
@@ -498,7 +500,14 @@ func (h *Handler) IntrospectHandler(w http.ResponseWriter, r *http.Request, _ ht
 		TokenType:         resp.GetAccessTokenType(),
 		TokenUse:          string(resp.GetTokenUse()),
 		NotBefore:         resp.GetAccessRequester().GetRequestedAt().Unix(),
-	}); err != nil {
+	}
+	introJson, err := json.Marshal(intro)
+	json.Unmarshal([]byte(introJson), &out)
+	for k,v := range session.Extra {
+		out[k] = v
+	}
+
+	if err = json.NewEncoder(w).Encode(out); err != nil {
 		x.LogError(r, errorsx.WithStack(err), h.r.Logger())
 	}
 }
